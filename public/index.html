@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CEREBRO COMMAND — Hawkins Lab</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=VT323&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet" />
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════
+       BOOT SCREEN
+  ═══════════════════════════════════════════ -->
+    <div id="boot-screen" class="screen">
+        <div class="crt-scanlines"></div>
+        <div class="crt-vignette"></div>
+
+        <div class="boot-logo">
+            <div class="boot-title">CEREBRO COMMAND</div>
+            <div class="boot-sub">HAWKINS LAB · SECURE TRANSMISSION SYSTEM · AX-749</div>
+            <div class="boot-sub2">OPERATOR: HOPPER · SECTOR 7-G · CLASSIFICATION: TOP SECRET</div>
+        </div>
+
+        <div class="boot-switch-wrap">
+            <div class="boot-switch-label">System Power</div>
+            <div id="power-switch" class="power-switch">
+                <div class="switch-inner">
+                    <span class="sw-off">OFF</span>
+                    <span class="sw-on">ON</span>
+                    <div class="sw-handle"></div>
+                </div>
+            </div>
+            <div id="flip-hint" class="flip-hint">▼ FLIP TO POWER ON ▼</div>
+        </div>
+
+        <div id="boot-log" class="boot-log hidden">
+            <div class="boot-log-title">SYSTEM INITIALIZATION LOG</div>
+            <div id="boot-lines"></div>
+            <div class="boot-progress-wrap">
+                <div id="boot-progress" class="boot-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+       IDENT SCREEN
+  ═══════════════════════════════════════════ -->
+    <div id="ident-screen" class="screen hidden">
+        <div class="crt-scanlines"></div>
+
+        <div class="ident-panel">
+            <div class="screws">
+                <div class="screw tl"></div>
+                <div class="screw tr"></div>
+                <div class="screw bl"></div>
+                <div class="screw br"></div>
+            </div>
+
+            <div class="ident-header">
+                <div class="ident-title">IDENTITY VERIFICATION</div>
+                <div class="ident-sub">HAWKINS LAB SECURE ACCESS · LEVEL 5</div>
+            </div>
+
+            <div class="id-card" id="id-card">
+                <div id="scan-bar" class="scan-bar hidden"></div>
+                <div class="id-card-inner">
+                    <div style="position: relative; width: 80px; height: 100px;">
+                        <div class="id-avatar" id="id-avatar">👤</div>
+                        <video id="webcam-video" autoplay playsinline class="hidden" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 4px; z-index: 10;"></video>
+                        <canvas id="webcam-canvas" width="320" height="240" class="hidden" style="display: none;"></canvas>
+                    </div>
+                    <div>
+                        <div class="id-name">OPERATOR: HOPPER</div>
+                        <div class="id-clearance">CLEARANCE: LEVEL 5 — TOP SECRET</div>
+                        <div class="id-code">ID: HK-LAB-4419 · SECTOR 7-G</div>
+                        <div class="id-bars">
+                            <div class="id-bar filled"></div>
+                            <div class="id-bar filled"></div>
+                            <div class="id-bar filled"></div>
+                            <div class="id-bar filled"></div>
+                            <div class="id-bar filled"></div>
+                            <div class="id-bar"></div>
+                            <div class="id-bar"></div>
+                            <div class="id-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="id-verified" class="id-verified hidden">✓ IDENTITY VERIFIED — ACCESS GRANTED</div>
+            </div>
+
+            <div id="pin-section">
+                <div class="pin-label">ENTER ACCESS CODE <span class="pin-hint">(DEMO: 1234)</span></div>
+                <div class="pin-dots" id="pin-dots">
+                    <div class="pin-dot" id="pd0"></div>
+                    <div class="pin-dot" id="pd1"></div>
+                    <div class="pin-dot" id="pd2"></div>
+                    <div class="pin-dot" id="pd3"></div>
+                </div>
+                <div class="numpad">
+                    <button class="num-btn" data-k="1">1</button><button class="num-btn" data-k="2">2</button><button
+                        class="num-btn" data-k="3">3</button>
+                    <button class="num-btn" data-k="4">4</button><button class="num-btn" data-k="5">5</button><button
+                        class="num-btn" data-k="6">6</button>
+                    <button class="num-btn" data-k="7">7</button><button class="num-btn" data-k="8">8</button><button
+                        class="num-btn" data-k="9">9</button>
+                    <button class="num-btn clr" data-k="CLR">CLR</button>
+                    <button class="num-btn" data-k="0">0</button>
+                    <button class="num-btn ok" data-k="OK">ENTER</button>
+                </div>
+                <div id="pin-error" class="pin-error hidden">⚠ INVALID CODE — ACCESS DENIED</div>
+                <button id="webcam-btn" class="webcam-btn">◎ WEBCAM VERIFICATION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+       MAIN PANEL
+  ═══════════════════════════════════════════ -->
+    <div id="main-panel" class="hidden">
+        <div class="crt-scanlines fixed"></div>
+        <div class="crt-vignette fixed"></div>
+
+        <!-- CODE RED overlay -->
+        <div id="code-red" class="code-red hidden">
+            <div class="cr-title">CODE RED</div>
+            <div class="cr-sub">ALL AGENTS — EMERGENCY ALERT</div>
+            <div id="cr-counter" class="cr-counter">10</div>
+            <div class="cr-msg">UPSIDE DOWN PROXIMITY DETECTED</div>
+        </div>
+
+        <!-- TOAST -->
+        <div id="toast" class="toast hidden">
+            <div id="toast-title" class="toast-title"></div>
+            <div id="toast-msg" class="toast-msg"></div>
+        </div>
+
+        <!-- NET DEBUG overlay -->
+        <div id="debug-overlay" class="debug-overlay hidden">
+            <div class="debug-header">
+                <span class="debug-heading">◈ NETWORK DEBUG MODE — HAWKINS NET</span>
+                <button id="close-debug" class="phys-btn red-btn">✕ CLOSE</button>
+            </div>
+            <div id="debug-grid" class="debug-grid"></div>
+        </div>
+
+        <!-- ══ TOPBAR ══ -->
+        <header class="topbar">
+            <div class="topbar-scanline"></div>
+
+            <div class="topbar-logo">
+                <div class="logo-title">CEREBRO COMMAND</div>
+                <div class="logo-sub">OPERATOR: HOPPER · HAWKINS LAB TERMINAL</div>
+            </div>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="BROADCASTER">⬡ BROADCASTER</button>
+                <button class="tab-btn" data-tab="LISTENER">◎ LISTENER</button>
+            </div>
+
+            <div class="spacer"></div>
+
+            <div class="top-remote-signal">
+                <div class="top-section-label">REMOTE SIGNAL</div>
+                <div class="top-row">
+                    <input id="remote-url" class="top-input" placeholder="ENTER MP4 URL..." />
+                    <button id="btn-intercept" class="phys-btn teal-sm">INTCPT</button>
+                </div>
+            </div>
+
+            <div class="top-local-source">
+                <div class="top-section-label">LOCAL SOURCE</div>
+                <input type="file" id="file-input" accept="video/*" style="display:none" />
+                <button id="upload-btn" class="phys-btn teal-btn">▲ UPLOAD</button>
+            </div>
+
+            <div class="top-queue">
+                <div class="top-section-label">BROADCAST QUEUE</div>
+                <div id="queue-name" class="queue-name">NO MEDIA QUEUED</div>
+            </div>
+
+            <div class="top-leds-wrap">
+                <div class="top-leds">
+                    <div class="led-wrap">
+                        <div class="led green blink"></div><span class="led-lbl">PWR</span>
+                    </div>
+                    <div class="led-wrap">
+                        <div class="led amber blink"></div><span class="led-lbl">TX</span>
+                    </div>
+                    <div class="led-wrap">
+                        <div class="led green blink"></div><span class="led-lbl">SYNC</span>
+                    </div>
+                    <div class="led-wrap">
+                        <div class="led dim"></div><span class="led-lbl">ERR</span>
+                    </div>
+                    <div class="led-wrap">
+                        <div class="led red blink"></div><span class="led-lbl">REC</span>
+                    </div>
+                </div>
+                <button id="join-code-btn" class="phys-btn cyan-sm" title="Copy join code">🔗 <span
+                        id="join-code-display"></span></button>
+            </div>
+
+            <div class="top-right">
+                <div class="live-badge">● BROADCASTING LIVE</div>
+                <div class="top-right-btns">
+                    <button id="net-debug-btn" class="phys-btn teal-sm">⌨ NET DEBUG</button>
+                    <button id="debug-toggle" class="phys-btn dim-sm">DEBUG OFF</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══ BROADCASTER TAB ══ -->
+        <div id="tab-broadcaster" class="main-grid">
+
+            <!-- LEFT: RADAR + AGENTS -->
+            <div class="col-left">
+
+                <!-- RADAR -->
+                <div class="panel panel-teal">
+                    <div class="screws">
+                        <div class="screw tl"></div>
+                        <div class="screw tr"></div>
+                        <div class="screw bl"></div>
+                        <div class="screw br"></div>
+                    </div>
+                    <div class="panel-header">
+                        <span class="panel-title">UPSIDE DOWN PROXIMITY</span>
+                        <div class="led green sm blink"></div>
+                    </div>
+                    <div class="radar-wrap">
+                        <canvas id="radar-canvas" width="240" height="150"></canvas>
+                    </div>
+                </div>
+
+                <!-- FIELD AGENTS -->
+                <div class="panel panel-green flex-col" style="flex-shrink: 0;">
+                    <div class="screws">
+                        <div class="screw tl"></div>
+                        <div class="screw tr"></div>
+                        <div class="screw bl"></div>
+                        <div class="screw br"></div>
+                    </div>
+                    <div class="panel-header">
+                        <span class="panel-title">FIELD AGENTS</span>
+                        <span class="badge green" id="agent-count-badge">0 CONNECTED</span>
+                    </div>
+                    <div class="scrollable-rest" style="max-height: 180px; overflow-y: auto; overflow-x: hidden;">
+                        <table class="agent-table">
+                            <thead>
+                                <tr>
+                                    <th>CALL SIGN</th>
+                                    <th>PING</th>
+                                    <th>SIGNAL</th>
+                                    <th>DRIFT</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agents-main-body">
+                                <tr id="no-agents-row">
+                                    <td colspan="5" style="text-align:center; color: var(--dim); padding: 30px 10px; font-size: 10px; letter-spacing: 3px;">WAITING FOR FIELD AGENTS...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="agent-footer" style="flex-shrink: 0;">
+                        <div id="join-toast-container"></div>
+                        <button id="sim-agent-btn" class="phys-btn teal-btn full">+ SIM AGENT JOIN</button>
+                    </div>
+                </div>
+
+                <!-- EMERGENCY ALARM -->
+                <div class="panel panel-red flex-col alarm-panel">
+                    <div class="screws">
+                        <div class="screw tl"></div>
+                        <div class="screw tr"></div>
+                        <div class="screw bl"></div>
+                        <div class="screw br"></div>
+                    </div>
+                    <div class="panel-header">
+                        <span class="panel-title">EMERGENCY ALARM</span>
+                        <span style="font-size:9px;color:#ff1744;letter-spacing:1px">ALL AGENTS</span>
+                    </div>
+                    <div class="alarm-body">
+                        <div class="alarm-btn-wrap">
+                            <div class="alarm-bg"></div>
+                            <div class="alarm-cover" id="alarm-cover">LIFT TO ARM</div>
+                            <div class="alarm-red-btn" id="alarm-btn"></div>
+                            <div class="alarm-ring hidden" id="alarm-ring"></div>
+                        </div>
+                        <div class="alarm-info">
+                            <div class="alarm-title">SOUND THE ALARM</div>
+                            <div class="alarm-desc">Triggers emergency flash + alert<br>on every connected field
+                                agent<br>simultaneously.</div>
+                            <div class="alarm-last">LAST FIRED: <span class="amber">10:46</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: VIDEO + CONTROLS -->
+            <div class="col-center">
+
+                <!-- TRANSMISSION FEED -->
+                <div class="panel panel-green flex-col" style="flex: 1; min-height: 0;">
+                    <div class="screws">
+                        <div class="screw tl"></div>
+                        <div class="screw tr"></div>
+                        <div class="screw bl"></div>
+                        <div class="screw br"></div>
+                    </div>
+                    <div class="panel-header">
+                        <span class="panel-title">TRANSMISSION FEED</span>
+                        <div class="rec-badge">
+                            <div class="led red sm blink"></div><span>• REC LIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- CRT display -->
+                    <div class="crt-display" id="crt-display">
+                        <div class="crt-inner-scan"></div>
+                        <div class="crt-vignette-inner"></div>
+                        <div class="crt-crosshair"></div>
+                        <video id="main-video" class="hidden" playsinline
+                            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0.85;"></video>
+                        <div class="crt-content" id="crt-content">
+                            <div class="crt-main-text" id="crt-main-text">STANDBY</div>
+                            <div class="wave-bars" id="wave-bars">
+                                <!-- generated by JS -->
+                            </div>
+                        </div>
+                        <span class="crt-tag tl">CAM-01 · 1920×1080</span>
+                        <span class="crt-tag tr rec-red" id="rec-tag">● REC</span>
+                        <span class="crt-tag bl">H.264 · 4.2 Mb/s</span>
+                        <span class="crt-tag br vt amber" id="timecode-display">00:00:00</span>
+                        <span class="crt-tag bm">HAWKINS-NET PROX-0</span>
+                    </div>
+
+                    <!-- Scrollable Rest Section -->
+                    <div class="scrollable-rest"
+                        style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; display: flex; flex-direction: column;">
+                        <!-- Scrubber -->
+                        <div class="scrubber-wrap" style="flex-shrink: 0;">
+                            <div class="scrubber-track" id="scrubber-track">
+                                <div class="scrubber-fill" id="scrubber-fill">
+                                    <div class="scrubber-head"></div>
+                                </div>
+                            </div>
+                            <div class="scrubber-info">
+                                <span id="scrubber-tc">00:00:00</span>
+                                <span id="scrubber-status" class="status-stopped">■ STOPPED</span>
+                                <span>04:32:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Playback controls -->
+                        <div class="controls-wrap" style="flex-shrink: 0;">
+                            <div class="controls-row" style="gap: 25px; padding: 10px 0;">
+                                <button class="radio-btn red" id="btn-stop" title="STOP">
+                                    <span class="btn-icon">■</span>
+                                </button>
+                                <button class="radio-btn teal" id="btn-rewind" title="REWIND">
+                                    <span class="btn-icon">⏮</span>
+                                </button>
+                                <button class="radio-btn green" id="btn-play" title="BROADCAST">
+                                    <span class="btn-icon">▶</span>
+                                </button>
+                                <button class="radio-btn teal" id="btn-forward" title="FORWARD">
+                                    <span class="btn-icon">⏭</span>
+                                </button>
+                                <div class="tc-display vt amber" id="tc-display" style="margin-left: 10px;">00:00:00</div>
+                                <div class="speed-wrap">
+                                    <span class="dim-label">SPD</span>
+                                    <button class="phys-btn amber-btn" id="btn-speed">1×</button>
+                                </div>
+                                <!-- VOL KNOB -->
+                                <div class="knob-wrap">
+                                    <span class="dim-label">VOL</span>
+                                    <div class="knob" id="vol-knob">
+                                        <div class="knob-inner" id="knob-inner">
+                                            <div class="knob-marker"></div>
+                                        </div>
+                                        <div class="knob-ticks" id="knob-ticks"></div>
+                                    </div>
+                                    <span class="vol-val" id="vol-val">70</span>
+                                </div>
+                            </div>
+                            <div class="controls-row">
+                                <button class="phys-btn cyan-btn flex1" id="btn-start-session">⚡ START SESSION</button>
+                                <button class="phys-btn amber-btn flex1" id="btn-copy-code">🔗 CODE: <span
+                                        id="join-code-ctrl"></span></button>
+                            </div>
+                        </div>
+
+                    </div> <!-- End Scrollable Rest -->
+                </div>
+            </div>
+
+            <!-- RIGHT: SYNC + ALARM -->
+            <div class="col-right">
+
+                <!-- SYNC DIAGNOSTICS -->
+                <div class="panel panel-amber flex-col" style="flex: 1; min-height: 0;">
+                    <div class="screws">
+                        <div class="screw tl"></div>
+                        <div class="screw tr"></div>
+                        <div class="screw bl"></div>
+                        <div class="screw br"></div>
+                    </div>
+                    <div class="panel-header" style="flex-shrink: 0;">
+                        <span class="panel-title">SYNC DIAGNOSTICS</span>
+                        <span class="badge green" id="sync-badge">4/4 SYNCED</span>
+                    </div>
+
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="diag-grid" id="diag-grid" style="flex: 1;"></div>
+
+                        <div class="telemetry-wrap">
+                            <div class="section-label">◈ SIGNAL TELEMETRY</div>
+                            <div id="telemetry-bars"></div>
+                        </div>
+
+                        <div class="vu-wrap">
+                            <div class="section-label">◈ AUDIO LEVEL</div>
+                            <div class="vu-meter" id="vu-meter"></div>
+                        </div>
+
+                        <div class="sync-graph-wrap" style="border-bottom:none; padding-bottom:5px;">
+                            <div class="section-label">◈ SYNC TIMELINE</div>
+                            <div style="padding-top: 10px;">
+                                <button class="phys-btn cyan-btn full" id="btn-resync">⟳ FORCE RESYNC ALL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- STATUS STRIP -->
+            <footer class="status-strip">
+                <span>SYS: <span class="green">ONLINE</span></span>
+                <span class="sep">│</span>
+                <span>SECTOR: <span style="color:#90cad0">HAWKINS 7-G</span></span>
+                <span class="sep">│</span>
+                <span>ENCRYPT: <span class="green">AES-256</span></span>
+                <span class="sep">│</span>
+                <span>THREAT: <span class="red">CODE RED</span></span>
+                <div class="clock vt amber" id="clock"></div>
+            </footer>
+        </div>
+
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script src="script.js"></script>
+</body>
+
+</html>
