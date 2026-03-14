@@ -1,0 +1,552 @@
+:root {
+    /* Color Palette */
+    --color-bg: #030002;
+    --color-bg-deep: #000000;
+    --color-red-core: #ff0033;
+    --color-red-glow: #e60026;
+    --color-red-dark: #4d000d;
+    --color-red-muted: #2a0008;
+    --color-text-main: #f5f5f5;
+    --color-text-dim: #999999;
+    
+    /* Typography */
+    --font-title: 'Cinzel', serif;
+    --font-ui: 'Inter', sans-serif;
+
+    /* Parallax Vars */
+    --px: 0;
+    --py: 0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--color-bg-deep);
+    font-family: var(--font-ui);
+    color: var(--color-text-main);
+}
+
+/* Post-Processing Overlays */
+.vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
+    pointer-events: none;
+    z-index: 50;
+}
+
+.grain {
+    position: absolute;
+    inset: -150%;
+    width: 300%;
+    height: 300%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 51;
+    animation: grainShimmer 8s steps(10) infinite;
+    mix-blend-mode: overlay;
+}
+
+.glitch-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 0, 51, 0.05);
+    z-index: 52;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: color-dodge;
+}
+
+body.flash .glitch-overlay {
+    animation: screenFlash 0.3s ease-out forwards;
+}
+
+body.flash .glitch-title {
+    text-shadow: 
+        0 0 40px rgba(255, 0, 51, 1),
+        0 0 100px rgba(255, 0, 51, 0.8),
+        0 0 150px rgba(255, 0, 51, 0.4);
+}
+
+body.transitioning .glitch-overlay {
+    animation: glitchOutPhase 2s forwards;
+}
+
+/* Background & FX Layers */
+.background-base {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(50% 50% at 50% 50%, var(--color-red-muted) 0%, var(--color-bg-deep) 100%);
+    z-index: 1;
+    transform: translate(calc(var(--px) * -15px), calc(var(--py) * -15px));
+    transition: background 0.1s;
+}
+
+body.flash .background-base {
+    background: radial-gradient(50% 50% at 50% 50%, #800018 0%, var(--color-bg-deep) 100%);
+}
+
+#fx-canvas {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    z-index: 2;
+    pointer-events: none;
+    filter: drop-shadow(0 0 10px rgba(230, 0, 38, 0.5));
+    transform: translate(calc(var(--px) * -8px), calc(var(--py) * -8px));
+}
+
+.fog-layer {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-size: 100% 100%;
+    z-index: 3;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.15;
+}
+
+.fog-back {
+    background: radial-gradient(ellipse at center, rgba(160, 0, 20, 0.4) 0%, transparent 60%);
+    animation: fogPulse 20s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    transform: translate(calc(var(--px) * 10px), calc(var(--py) * 10px));
+}
+
+.fog-front {
+    background: radial-gradient(ellipse at center, rgba(230, 0, 38, 0.1) 0%, transparent 70%);
+    animation: fogDrift 30s infinite alternate ease-in-out;
+    transform: translate(calc(var(--px) * 20px), calc(var(--py) * 20px));
+}
+
+/* Pre-rendered Creatures & Environment */
+.creature-layer {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 4;
+    transition: opacity 0.3s, filter 0.3s;
+}
+
+.creature-far {
+    width: 30vw;
+    height: 50vh;
+    bottom: 20%;
+    left: 45%;
+    background-image: url('assets/creature_far.png');
+    opacity: 0.15;
+    translate: calc(var(--px) * 6px) calc(var(--py) * 6px);
+    animation: creatureBreathe 6s infinite alternate ease-in-out;
+    z-index: 2; /* Behind back fog */
+}
+
+.creature-left {
+    width: 45vw;
+    height: 80vh;
+    bottom: -5%;
+    left: -5%;
+    background-image: url('assets/creature_left.png');
+    opacity: 0.3;
+    translate: calc(var(--px) * 12px) calc(var(--py) * 12px);
+    animation: creatureSway 8s infinite alternate ease-in-out;
+}
+
+.creature-right {
+    width: 55vw;
+    height: 85vh;
+    bottom: -15%;
+    right: -10%;
+    background-image: url('assets/creature_right.png');
+    opacity: 0.35;
+    translate: calc(var(--px) * 18px) calc(var(--py) * 18px);
+    animation: creatureTwitch 7s infinite alternate ease-in-out;
+}
+
+/* Organic roots overlay framing the screen */
+.environment-vines {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle at center, transparent 60%, rgba(10, 0, 0, 0.95) 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0,0 Q10,30 0,50 Q20,40 0,80 Q10,90 0,100 L5,100 Q20,70 5,50 Q30,40 5,20 L0,0 Z' fill='rgba(25,0,0,0.5)'/%3E%3Cpath d='M100,0 Q80,20 100,40 Q70,30 100,50 Q90,70 100,100 L95,100 Q80,80 95,50 Q75,30 95,10 L100,0 Z' fill='rgba(25,0,0,0.5)'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: multiply;
+    animation: vinesCreep 15s infinite alternate ease-in-out;
+    translate: calc(var(--px) * -5px) calc(var(--py) * -5px);
+}
+
+/* Flash logic: reveal creatures more during lightning */
+body.flash .creature-layer {
+    opacity: 0.7;
+    filter: brightness(1.8) contrast(1.2);
+}
+body.flash .creature-far {
+    opacity: 0.4;
+}
+
+/* Content Layout */
+.content-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transform: translate(calc(var(--px) * 15px), calc(var(--py) * 15px));
+}
+
+.hero-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Cinematic Title */
+.title-container {
+    position: relative;
+    text-align: center;
+    animation: titleEntrance 4.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+}
+
+.glitch-title {
+    font-family: var(--font-title);
+    font-size: clamp(3.5rem, 8vw, 8rem);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: #fff;
+    text-shadow: 
+        0 0 20px rgba(255, 0, 51, 0.6),
+        0 0 50px rgba(255, 0, 51, 0.4),
+        0 0 100px rgba(255, 0, 51, 0.2);
+    position: relative;
+    text-transform: uppercase;
+    animation: textFlicker 8s infinite;
+}
+
+/* Title Reflection for Upside-Down Mirror Effect */
+.title-reflection {
+    font-family: var(--font-title);
+    font-size: clamp(3.5rem, 8vw, 8rem);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: #fff;
+    text-transform: uppercase;
+    transform: scaleY(-1);
+    opacity: 0.15;
+    filter: blur(6px);
+    margin-top: -15px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,1) 100%);
+    mask-image: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,1) 100%);
+    animation: reflectionDrift 8s infinite alternate ease-in-out;
+}
+
+.tagline {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: taglineEntrance 3s cubic-bezier(0.16, 1, 0.3, 1) forwards 2s;
+    text-shadow: 0 0 10px rgba(255, 0, 51, 0.2);
+    text-align: center;
+}
+
+/* Buttons */
+.cta-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    opacity: 0;
+    animation: taglineEntrance 3s cubic-bezier(0.16, 1, 0.3, 1) forwards 2.5s;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    position: relative;
+    padding: 1rem 2.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+    min-width: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-primary {
+    background: rgba(30, 0, 5, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 0, 51, 0.4);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.8),
+        inset 0 0 15px rgba(255, 0, 51, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-primary:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 0, 51, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.btn-primary:hover {
+    background: rgba(80, 0, 15, 0.8);
+    border-color: rgba(255, 0, 51, 0.9);
+    box-shadow: 
+        0 10px 40px rgba(255, 0, 51, 0.3),
+        inset 0 0 30px rgba(255, 0, 51, 0.4);
+    transform: translateY(-2px);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.btn-primary:hover:before {
+    transform: translateX(100%);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 0 20px rgba(255, 0, 51, 0.8);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--color-text-dim);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:hover {
+    color: #fff;
+    border-color: rgba(255, 0, 51, 0.5);
+    background: rgba(255, 0, 51, 0.05);
+    box-shadow: 0 5px 20px rgba(255, 0, 51, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    animation: taglineEntrance 3s forwards 4s;
+}
+
+.scroll-text {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--color-red-core);
+    font-weight: 600;
+    opacity: 0.7;
+    animation: pulseText 2s infinite alternate;
+}
+
+.scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(255, 0, 51, 0.8), transparent);
+    animation: lineDrop 2s infinite;
+    transform-origin: top;
+}
+
+/* Keyframes */
+@keyframes titleEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        letter-spacing: 0.1em;
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        letter-spacing: 0.2em;
+        filter: blur(0);
+    }
+}
+
+@keyframes taglineEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+        filter: blur(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes textFlicker {
+    0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+        opacity: 1;
+        text-shadow: 
+            0 0 20px rgba(255, 0, 51, 0.6),
+            0 0 50px rgba(255, 0, 51, 0.4),
+            0 0 100px rgba(255, 0, 51, 0.2);
+    }
+    20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+        opacity: 0.8;
+        text-shadow: none;
+    }
+}
+
+@keyframes screenFlash {
+    0% { opacity: 0; }
+    10% { opacity: 0.3; }
+    20% { opacity: 0; }
+    50% { opacity: 0.1; }
+    100% { opacity: 0; }
+}
+
+@keyframes fogPulse {
+    0% { transform: scale(1) translate(calc(var(--px) * 10px), calc(var(--py) * 10px)); opacity: 0.3; }
+    100% { transform: scale(1.1) translate(calc(var(--px) * 10px), calc(var(--py) * 10px)); opacity: 0.5; }
+}
+
+@keyframes fogDrift {
+    0% { transform: rotate(0deg) scale(1) translate(calc(var(--px) * 20px), calc(var(--py) * 20px)); opacity: 0.1; }
+    100% { transform: rotate(5deg) scale(1.05) translate(calc(var(--px) * 20px), calc(var(--py) * 20px)); opacity: 0.4; }
+}
+
+@keyframes creatureBreathe {
+    0% { transform: scale(1) translateY(0); }
+    100% { transform: scale(1.02) translateY(5px); }
+}
+
+@keyframes creatureSway {
+    0% { transform: rotate(-1deg) translateX(0); }
+    100% { transform: rotate(1deg) translateX(10px); }
+}
+
+@keyframes creatureTwitch {
+    0%, 90% { transform: scaleX(1); filter: brightness(1); }
+    92%, 96% { transform: scaleX(1.02) skewX(1deg); filter: brightness(1.2); }
+    100% { transform: scaleX(1); filter: brightness(1); }
+}
+
+@keyframes vinesCreep {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes grainShimmer {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-5%, -5%); }
+}
+
+@keyframes reflectionDrift {
+    0% { transform: scaleY(-1) skewX(0deg); opacity: 0.15; }
+    100% { transform: scaleY(-1) skewX(2deg); opacity: 0.25; filter: blur(8px); }
+}
+
+@keyframes pulseText {
+    0% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+@keyframes lineDrop {
+    0% { transform: scaleY(0); opacity: 0; }
+    50% { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1) translateY(100%); opacity: 0; }
+}
+
+@keyframes glitchOutPhase {
+    0% {
+        filter: hue-rotate(0deg) contrast(1);
+        transform: scale(1);
+        opacity: 1;
+    }
+    20% {
+        filter: hue-rotate(90deg) contrast(2) invert(0.2);
+        transform: scale(1.02) skewX(2deg);
+        opacity: 0.8;
+    }
+    40% {
+        filter: blur(4px) brightness(2);
+        transform: scale(0.98) skewX(-2deg);
+    }
+    60% {
+        filter: contrast(3) invert(0.1);
+        transform: scale(1.05);
+        opacity: 0.5;
+    }
+    100% {
+        filter: brightness(0) blur(20px);
+        transform: scale(1.1);
+        opacity: 0;
+    }
+}
+
+/* Responsive Handling */
+@media (max-width: 768px) {
+    .cta-group {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1.5rem;
+        gap: 1rem;
+    }
+    .btn {
+        width: 100%;
+        min-width: 0;
+        padding: 0.8rem 1.5rem;
+    }
+    .creature-far { width: 45vw; left: 30%; }
+    .creature-left { width: 60vw; }
+    .creature-right { width: 70vw; }
+    .title-reflection {
+        margin-top: -5px;
+        opacity: 0.1;
+    }
+    .glitch-title {
+        letter-spacing: 0.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .glitch-title {
+        font-size: 3rem;
+    }
+    .tagline {
+        font-size: 0.8rem;
+        letter-spacing: 0.2em;
+    }
+}

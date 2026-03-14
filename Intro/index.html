@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBLIVION - Cinematic Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Background Engine -->
+    <div class="background-base"></div>
+    <!-- Canvas for lightning, spores, and energetic particles -->
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- Atmospheric depth layers -->
+    <div class="creature-layer creature-far"></div>
+    <div class="fog-layer fog-back"></div>
+
+    <div class="creature-layer creature-left"></div>
+    <div class="creature-layer creature-right"></div>
+
+    <div class="fog-layer fog-front"></div>
+    <div class="environment-vines"></div>
+
+    <!-- Post-processing effects -->
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div class="glitch-overlay"></div>
+
+    <!-- Main Cinematic Foreground -->
+    <main class="content-wrapper" id="main-content">
+        <div class="hero-center">
+            <div class="title-container">
+                <h1 class="glitch-title" data-text="ADVAITA 2026">
+                    ADVAITA<br>2026
+                </h1>
+                <div class="title-reflection">ADVAITA 2026</div>
+            </div>
+
+            <p class="tagline">A synchronized immersive broadcast experience</p>
+
+            <div class="cta-group">
+                <button class="btn btn-primary" id="enter-btn">
+                    <span class="btn-text">Enter Experience</span>
+                    <div class="btn-glow"></div>
+                </button>
+                <a href="../index.html" class="btn btn-secondary" style="text-decoration: none;">
+                    <span class="btn-text">Explore Project</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="scroll-indicator">
+            <span class="scroll-text">SYSTEM STATUS: CORRUPTED</span>
+            <div class="scroll-line"></div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
