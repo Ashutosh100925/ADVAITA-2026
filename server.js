@@ -13,12 +13,13 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname)));
 
-// Route mapping for mode detection
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+// Route mapping for mode detection (Moving ABOVE static middleware to ensure precedence)
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'intro', 'index.html')));
 app.get('/broadcaster', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/listener', (req, res) => res.sendFile(path.join(__dirname, 'listener.html')));
+
+app.use(express.static(path.join(__dirname)));
 
 app.post('/verify', (req, res) => {
     const { image } = req.body;

@@ -1,7 +1,8 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/index.html" },
+    { "source": "/", "destination": "/public/intro/index.html" },
+    { "source": "/broadcaster", "destination": "/index.html" },
     { "source": "/listener", "destination": "/listener.html" }
   ]
 }

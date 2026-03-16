@@ -204,11 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Intensity the canvas lightning/particles
         nextLightningTime = Date.now();
         
-        // Redirect after animation (Mock)
+        // Redirect after animation
         setTimeout(() => {
-            alert('Navigation triggered: Welcome to the Void.');
-            // window.location.href = '/experience';
-            // document.body.classList.remove('transitioning');
+            window.location.href = '/broadcaster';
         }, 2000);
     });
 });
