@@ -38,6 +38,7 @@
                 </div>
             </div>
             <div id="flip-hint" class="flip-hint">▼ FLIP TO POWER ON ▼</div>
+            <div id="voice-hint" class="voice-hint" style="margin-top: 25px; font-size: 14px; color: var(--cyan); letter-spacing: 3px; text-shadow: 0 0 8px var(--cyan); animation: pulse 2s infinite;">🎙 SAY "OPEN COMMAND SYSTEM" TO LOGIN</div>
         </div>
 
         <div id="boot-log" class="boot-log hidden">
@@ -251,7 +252,7 @@
                         <span class="panel-title">FIELD AGENTS</span>
                         <span class="badge green" id="agent-count-badge">0 CONNECTED</span>
                     </div>
-                    <div class="scrollable-rest" style="max-height: 180px; overflow-y: auto; overflow-x: hidden;">
+                    <div class="scrollable-rest">
                         <table class="agent-table">
                             <thead>
                                 <tr>
@@ -344,7 +345,7 @@
 
                     <!-- Scrollable Rest Section -->
                     <div class="scrollable-rest"
-                        style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; display: flex; flex-direction: column;">
+                        style="flex: 1; display: flex; flex-direction: column;">
                         <!-- Scrubber -->
                         <div class="scrubber-wrap" style="flex-shrink: 0;">
                             <div class="scrubber-track" id="scrubber-track">

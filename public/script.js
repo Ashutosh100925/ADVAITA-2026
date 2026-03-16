@@ -67,6 +67,11 @@ let glitchTimer = null;
 let pin = "";
 let currentTab = window.location.pathname.includes("/listener") ? "LISTENER" : "BROADCASTER";
 
+// Web Audio for Broadcaster
+let bAudioCtx = null;
+let bAudioSource = null;
+let bAudioDest = null;
+
 /* ─── WEBRTC & SOCKET ─── */
 const ROLE = currentTab === "LISTENER" ? "listener" : "broadcaster";
 const ROOM_ID = "hawkins-room";
@@ -113,7 +118,80 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
    ═══════════════════════════════════════════════════ */
 function initBoot() {
     const ps = $("power-switch");
-    if (ps) ps.addEventListener("click", startBoot);
+    if (ps) {
+        ps.addEventListener("click", startBoot);
+        initVoiceCommand();
+    }
+}
+
+function initVoiceCommand() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function(event) {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim().toLowerCase();
+            console.log("CEREBRO AI HEARD:", command);
+            
+            // Allow fuzzy matching
+            if (command.includes("open command system") || command.includes("system") || command.includes("open command")) {
+                const ps = $("power-switch");
+                if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                    const vh = $("voice-hint");
+                    if(vh) {
+                        vh.textContent = "VOICE MATCH: ACCESSING SYSTEM...";
+                        vh.style.color = "var(--amber)";
+                        vh.style.textShadow = "0 0 10px var(--amber)";
+                    }
+                    
+                    // Add AI voice response
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance("Command system activated");
+                        utterance.rate = 0.9;
+                        utterance.pitch = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    }
+                    
+                    startBoot();
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.warn("Speech recognition error:", event.error);
+        };
+
+        recognition.onend = function() {
+            // Auto restart listener if we're still on the boot screen and not flipped yet
+            const ps = $("power-switch");
+            if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                try { recognition.start(); } catch(e){}
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch(e) {
+            console.warn("Speech auto-start blocked. Waiting for jumpstart click.", e);
+        }
+        
+        // Jumpstart speech on any click to bypass browser auto-play/mic policies safely
+        $("boot-screen").addEventListener("click", () => {
+             const ps = $("power-switch");
+             if (!ps.classList.contains("on")) {
+                 try { recognition.start(); } catch(e){}
+             }
+        }, {once: true});
+        
+    } else {
+        const vh = $("voice-hint");
+        if(vh) vh.style.display = "none";
+        console.warn("Speech Recognition API not supported in this browser.");
+    }
 }
 
 function startBoot() {
@@ -127,6 +205,13 @@ function startBoot() {
     if (hint) hint.style.display = "none";
     log.classList.remove("hidden");
     lines.innerHTML = "";
+
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance("System is initializing wait a moment");
+        utterance.rate = 0.9;
+        utterance.pitch = 0.8;
+        window.speechSynthesis.speak(utterance);
+    }
 
     let i = 0;
     const iv = setInterval(() => {
@@ -155,10 +240,45 @@ function initIdent() {
     document.querySelectorAll(".num-btn").forEach(btn => {
         btn.addEventListener("click", () => handleKey(btn.dataset.k));
     });
+    
+    // Add physical keyboard support
+    document.addEventListener("keydown", handlePhysicalKeyboard);
+    
     $("webcam-btn").addEventListener("click", doWebcam);
 }
 
+function handlePhysicalKeyboard(e) {
+    if ($("ident-screen").classList.contains("hidden")) return;
+    
+    const key = e.key;
+    if (key >= '0' && key <= '9') {
+        handleKey(key);
+    } else if (key === 'Enter') {
+        handleKey('OK');
+    } else if (key === 'Backspace' || key === 'Delete' || key === 'Escape') {
+        handleKey('CLR');
+    }
+}
+
 function handleKey(k) {
+    try {
+        const audioCtx = window.AudioContext || window.webkitAudioContext;
+        if (audioCtx) {
+            if (!window.keyBeepCtx) window.keyBeepCtx = new audioCtx();
+            if (window.keyBeepCtx.state === 'suspended') window.keyBeepCtx.resume();
+            const osc = window.keyBeepCtx.createOscillator();
+            const gain = window.keyBeepCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = k === 'CLR' ? 300 : k === 'OK' ? 800 : 600;
+            gain.gain.setValueAtTime(0.1, window.keyBeepCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, window.keyBeepCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(window.keyBeepCtx.destination);
+            osc.start();
+            osc.stop(window.keyBeepCtx.currentTime + 0.1);
+        }
+    } catch(e) {}
+
     if (k === "CLR") { pin = ""; updatePinDots(); return; }
     if (k === "OK") { submitPin(); return; }
     if (pin.length < 4) { pin += k; updatePinDots(); }
@@ -193,6 +313,7 @@ function verifySuccess() {
     $("pin-section").classList.add("hidden");
     $("id-avatar").textContent = "✓";
     $("id-verified").classList.remove("hidden");
+    document.removeEventListener("keydown", handlePhysicalKeyboard);
     setTimeout(showMain, 1500);
 }
 
@@ -482,6 +603,10 @@ function createPeerConnection(targetSocketId) {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     peerConnections[targetSocketId] = pc;
 
+    // Force create transceivers so SDP always has m=audio and m=video
+    pc._vSender = pc.addTransceiver('video', { direction: 'sendonly' }).sender;
+    pc._aSender = pc.addTransceiver('audio', { direction: 'sendonly' }).sender;
+
     pc.onicecandidate = (event) => {
         if (event.candidate) {
             socket.emit('ice-candidate', { roomId: ROOM_ID, targetSocketId, candidate: event.candidate });
@@ -489,7 +614,8 @@ function createPeerConnection(targetSocketId) {
     };
 
     if (localStream) {
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        if (localStream.getVideoTracks()[0]) pc._vSender.replaceTrack(localStream.getVideoTracks()[0]);
+        if (localStream.getAudioTracks()[0]) pc._aSender.replaceTrack(localStream.getAudioTracks()[0]);
     }
     let negotiationTimeout = null;
     pc.onnegotiationneeded = () => {
@@ -1166,7 +1292,10 @@ function loadMedia(src, name) {
 
     const video = $("main-video");
     if (video) {
+        video.crossOrigin = "anonymous"; // Enable CORS for remote signal capture
         video.src = src;
+        video.muted = false;
+        video.volume = vol / 100;
         video.load();
         video.onloadedmetadata = () => {
             TOTAL_TC = video.duration || TOTAL_TC;
@@ -1179,8 +1308,65 @@ function loadMedia(src, name) {
             addMsg("SYSTEM", "SIGNAL LOCKED: " + name, GREEN, true);
             showToast("MEDIA READY", name);
         };
+        video.onplay = () => {
+            establishLocalStream();
+        };
     }
 }
+
+function establishLocalStream() {
+    const video = $("main-video");
+    if (!video || !video.src) return;
+
+    try {
+        // 1. Capture Video
+        let vStream;
+        if (video.captureStream) vStream = video.captureStream(30);
+        else if (video.mozCaptureStream) vStream = video.mozCaptureStream(30);
+
+        // 2. Capture Audio via Web Audio
+        if (!bAudioCtx) {
+            bAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            bAudioDest = bAudioCtx.createMediaStreamDestination();
+        }
+        if (!bAudioSource) {
+            bAudioSource = bAudioCtx.createMediaElementSource(video);
+            bAudioSource.connect(bAudioDest);
+            bAudioSource.connect(bAudioCtx.destination);
+        }
+        if (bAudioCtx.state === 'suspended') bAudioCtx.resume();
+
+        const finalTracks = [];
+        if (vStream && vStream.getVideoTracks().length > 0) finalTracks.push(vStream.getVideoTracks()[0]);
+        if (bAudioDest.stream.getAudioTracks().length > 0) finalTracks.push(bAudioDest.stream.getAudioTracks()[0]);
+
+        if (finalTracks.length === 0) return;
+
+        if (!localStream) {
+            localStream = new MediaStream(finalTracks);
+        } else {
+            localStream.getTracks().forEach(t => localStream.removeTrack(t));
+            finalTracks.forEach(t => localStream.addTrack(t));
+        }
+        console.log("Stream captured:", localStream.getTracks().map(t => t.kind).join(', '));
+
+        // Update peers
+        Object.values(peerConnections).forEach(pc => {
+            localStream.getTracks().forEach(track => {
+                track.enabled = true; // Force enabled
+                const sender = pc.getSenders().find(s => s.track && s.track.kind === track.kind);
+                if (sender) sender.replaceTrack(track);
+                else pc.addTrack(track, localStream);
+            });
+        });
+    } catch (e) {
+        console.error("Capture failed:", e);
+    }
+}
+
+
+
+
 
 document.addEventListener("DOMContentLoaded", initBoot);
 

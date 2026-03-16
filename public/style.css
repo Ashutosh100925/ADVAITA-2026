@@ -502,18 +502,18 @@ textarea {
 }
 
 .led-lbl {
-    font-size: 7px;
+    font-size: 9px;
     color: var(--dim);
-    letter-spacing: 1px;
+    letter-spacing: 2px;
 }
 
 /* ─── PHYSICAL BUTTONS ─── */
 .phys-btn {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 2px;
-    padding: 8px 14px;
+    letter-spacing: 3px;
+    padding: 8px 16px;
     cursor: pointer;
     text-transform: uppercase;
     background: #050f0f;
@@ -522,6 +522,7 @@ textarea {
     border-radius: 2px;
     color: var(--cyan);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 3px 6px rgba(0, 0, 0, .7);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 8px currentColor;
     transition: color .1s, border-color .1s, transform .1s, box-shadow .1s;
 }
 
@@ -545,6 +546,8 @@ textarea {
 .phys-btn.teal-btn {
     color: var(--teal);
     border-color: var(--border);
+    font-size: 13px;
+    padding: 8px 16px;
 }
 
 .phys-btn.green-btn {
@@ -566,20 +569,20 @@ textarea {
 
 .phys-btn.dim-sm {
     color: var(--dim);
-    font-size: 8px;
-    padding: 4px 10px;
+    font-size: 11px;
+    padding: 6px 10px;
 }
 
 .phys-btn.cyan-sm {
     color: var(--cyan);
-    font-size: 8px;
-    padding: 4px 8px;
+    font-size: 11px;
+    padding: 6px 10px;
 }
 
 .phys-btn.teal-sm {
     color: var(--teal);
-    font-size: 8px;
-    padding: 4px 8px;
+    font-size: 11px;
+    padding: 6px 12px;
 }
 
 .phys-btn.bcast-all {
@@ -590,8 +593,8 @@ textarea {
 
 /* ─── 3D RADIO BUTTONS ─── */
 .radio-btn {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     cursor: pointer;
     background: radial-gradient(circle at 35% 35%, #0f2a2a, #051414 70%);
@@ -601,9 +604,9 @@ textarea {
     align-items: center;
     justify-content: center;
     box-shadow: 
-        0 4px 10px rgba(0, 0, 0, 0.8),
-        inset 0 2px 2px rgba(255, 255, 255, 0.05),
-        inset 0 -2px 5px rgba(0, 0, 0, 0.8);
+        0 8px 15px rgba(0, 0, 0, 0.9),
+        inset 0 3px 5px rgba(255, 255, 255, 0.1),
+        inset 0 -3px 8px rgba(0, 0, 0, 0.9);
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
     padding: 0;
@@ -613,13 +616,14 @@ textarea {
 .radio-btn::before {
     content: '';
     position: absolute;
-    inset: -4px;
+    inset: -6px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #122525, #0a1111);
+    background: linear-gradient(135deg, #182a2a, #0a1111);
     z-index: -1;
     box-shadow: 
-        1px 1px 1px rgba(255, 255, 255, 0.05),
-        inset 1px 1px 1px rgba(0, 0, 0, 0.5);
+        1px 2px 3px rgba(255, 255, 255, 0.08),
+        inset 2px 3px 5px rgba(0, 0, 0, 0.8),
+        0 0 0 1px #030808;
 }
 
 .radio-btn .btn-icon {
@@ -633,22 +637,22 @@ textarea {
 
 /* Color Variants */
 .radio-btn.red { 
-    background: radial-gradient(circle at 35% 35%, #5a1010, #1a0505 75%);
-    box-shadow: 0 0 15px rgba(255, 23, 68, 0.2), 0 4px 10px rgba(0,0,0,0.8);
+    background: radial-gradient(circle at 35% 35%, #6a1818, #1a0505 75%);
+    box-shadow: 0 0 25px rgba(255, 23, 68, 0.2), 0 8px 15px rgba(0,0,0,0.9), inset 0 3px 5px rgba(255, 100, 100, 0.2);
 }
-.radio-btn.red .btn-icon { color: var(--red); text-shadow: 0 0 8px rgba(255, 23, 68, 0.6); }
+.radio-btn.red .btn-icon { color: #ff8888; text-shadow: 0 0 12px var(--red), 0 0 20px rgba(255, 23, 68, 0.8); }
 
 .radio-btn.green { 
-    background: radial-gradient(circle at 35% 35%, #0d3a1a, #040f08 75%);
-    box-shadow: 0 0 15px rgba(0, 230, 118, 0.2), 0 4px 10px rgba(0,0,0,0.8);
+    background: radial-gradient(circle at 35% 35%, #155025, #040f08 75%);
+    box-shadow: 0 0 25px rgba(0, 230, 118, 0.2), 0 8px 15px rgba(0,0,0,0.9), inset 0 3px 5px rgba(100, 255, 150, 0.2);
 }
-.radio-btn.green .btn-icon { color: var(--green); text-shadow: 0 0 8px rgba(0, 230, 118, 0.6); }
+.radio-btn.green .btn-icon { color: #88ffbb; text-shadow: 0 0 12px var(--green), 0 0 20px rgba(0, 230, 118, 0.8); }
 
 .radio-btn.teal { 
-    background: radial-gradient(circle at 35% 35%, #0a3a3a, #040f0f 75%);
-    box-shadow: 0 0 15px rgba(0, 188, 212, 0.2), 0 4px 10px rgba(0,0,0,0.8);
+    background: radial-gradient(circle at 35% 35%, #0f4a4a, #040f0f 75%);
+    box-shadow: 0 0 25px rgba(0, 188, 212, 0.2), 0 8px 15px rgba(0,0,0,0.9), inset 0 3px 5px rgba(100, 220, 255, 0.2);
 }
-.radio-btn.teal .btn-icon { color: var(--teal); text-shadow: 0 0 8px rgba(0, 188, 212, 0.6); }
+.radio-btn.teal .btn-icon { color: #88eeff; text-shadow: 0 0 12px var(--teal), 0 0 20px rgba(0, 188, 212, 0.8); }
 
 /* Interaction States */
 .radio-btn:hover {
@@ -1135,18 +1139,21 @@ textarea {
 
 .logo-title {
     font-family: 'VT323', monospace;
-    font-size: clamp(20px, 3vw, 32px);
-    color: var(--cyan);
-    letter-spacing: 6px;
-    text-shadow: 0 0 15px var(--cyan), 0 0 30px #00e5ff44;
+    font-size: clamp(24px, 3.5vw, 40px);
+    font-weight: 700;
+    color: #e0ffff; /* Very light cyan */
+    letter-spacing: 8px;
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 0 #004050, 0 4px 6px rgba(0,0,0,0.8), 0 0 10px var(--cyan), 0 0 20px var(--cyan), 0 0 40px rgba(0,229,255,0.6);
     animation: glitch 16s infinite;
 }
 
 .logo-sub {
-    font-size: 9px;
-    color: var(--teal);
-    letter-spacing: 3px;
-    margin-top: 1px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    margin-top: 4px;
+    text-shadow: 0 0 6px var(--cyan);
 }
 
 .tab-bar {
@@ -1157,31 +1164,34 @@ textarea {
 
 .tab-btn {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 2px;
-    padding: 6px 14px;
+    letter-spacing: 3px;
+    padding: 8px 16px;
     cursor: pointer;
     text-transform: uppercase;
     background: #040f0f;
     border: 1px solid var(--border);
-    color: var(--dim);
+    color: #6a9c9c;
     transition: all .2s;
 }
 
 .tab-btn.active {
     background: #00e5ff18;
     border-color: var(--cyan);
-    color: var(--cyan);
-    box-shadow: 0 0 10px #00e5ff22;
-    text-shadow: 0 0 6px var(--cyan);
+    color: #e0faff;
+    font-weight: 900;
+    box-shadow: 0 0 15px #00e5ff44, inset 0 0 10px #00e5ff22;
+    text-shadow: 0 0 8px var(--cyan), 0 0 16px var(--cyan);
 }
 
 .top-section-label {
-    font-size: 8px;
-    color: var(--teal);
-    letter-spacing: 2px;
-    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 5px rgba(0,0,0,0.8), 0 0 8px var(--cyan);
 }
 
 .top-remote-signal,
@@ -1189,7 +1199,8 @@ textarea {
 .top-queue {
     background: #040f0f;
     border: 1px solid var(--border);
-    padding: 6px 10px;
+    padding: 10px 16px;
+    box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.05);
 }
 
 .top-remote-signal {
@@ -1209,25 +1220,33 @@ textarea {
     flex: 1;
     background: #020808;
     border: 1px solid var(--border);
-    color: var(--cyan);
-    font-size: 9px;
-    padding: 4px 6px;
+    color: #e0faff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 12px;
     outline: none;
     font-family: 'Share Tech Mono', monospace;
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 5px rgba(0,0,0,0.8), 0 0 8px var(--cyan);
+    box-shadow: inset 0 0 5px rgba(0, 229, 255, 0.1);
 }
 
 .queue-name {
-    font-size: 10px;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--dim);
-    letter-spacing: 1px;
+    letter-spacing: 3px;
     text-align: center;
-    padding: 4px 0;
+    padding: 10px 14px;
     border: 1px solid var(--border);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 8px var(--dim);
+    box-shadow: inset 0 0 5px rgba(0, 229, 255, 0.05);
 }
 
 .queue-name.loaded {
-    color: var(--cyan);
+    color: #e0faff;
     border-color: var(--cyan);
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 5px rgba(0,0,0,0.8), 0 0 8px var(--cyan);
+    box-shadow: inset 0 0 10px #00e5ff22;
 }
 
 .top-leds-wrap {
@@ -1246,15 +1265,16 @@ textarea {
 }
 
 .live-badge {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--red);
+    font-size: 12px;
+    font-weight: 900;
+    color: #ffd0d0;
     border: 2px solid var(--red);
-    padding: 5px 12px;
-    letter-spacing: 2px;
-    background: #ff174411;
+    padding: 6px 14px;
+    letter-spacing: 3px;
+    background: #ff174418;
     animation: fastpulse 1s infinite;
-    box-shadow: 0 0 10px #ff174444;
+    text-shadow: 0 0 8px var(--red), 0 0 16px var(--red);
+    box-shadow: 0 0 15px #ff174488, inset 0 0 15px #ff174444;
 }
 
 .top-right {
@@ -1271,21 +1291,20 @@ textarea {
 
 /* ─── MAIN GRID ─── */
 #main-panel {
-    height: 100vh;
+    min-height: 100vh;
     padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 5px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .main-grid {
     flex: 1;
     display: grid;
     grid-template-columns: 360px 1fr 340px;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
     gap: 5px;
-    min-height: 0;
 }
 
 .col-left {
@@ -1293,8 +1312,6 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 0;
-    overflow: hidden;
     padding-right: 4px;
 }
 
@@ -1303,9 +1320,6 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
     padding-right: 4px;
 }
 
@@ -1314,15 +1328,11 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
     padding-right: 4px;
 }
 
 .col-comms {
     grid-row: 1/3;
-    min-height: 0;
 }
 
 /* ─── RADAR ─── */
@@ -1346,14 +1356,15 @@ textarea {
 }
 
 .agent-table thead th {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--teal);
-    opacity: 0.8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    opacity: 0.9;
     padding: 8px 10px;
     text-align: left;
     border-bottom: 1px solid var(--border);
-    font-weight: 400;
+    text-shadow: 0 0 5px var(--cyan);
 }
 
 .agent-table tbody td {
@@ -1365,9 +1376,11 @@ textarea {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #e0faff;
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 5px rgba(0,0,0,0.8), 0 0 8px var(--cyan);
 }
 
 .agent-avatar {
@@ -1471,11 +1484,13 @@ textarea {
 }
 
 .status-badge {
-    font-size: 8px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border: 1px solid;
-    letter-spacing: 1px;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 8px;
+    border: 2px solid;
+    letter-spacing: 2px;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 5px currentColor;
+    box-shadow: inset 0 0 5px currentColor;
 }
 
 .status-badge.synced {
@@ -1550,20 +1565,23 @@ textarea {
 
 .crt-main-text {
     font-family: 'VT323', monospace;
-    font-size: clamp(26px, 4vw, 52px);
-    color: var(--red);
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px var(--red), 0 0 40px #ff174466;
+    font-size: clamp(30px, 4.5vw, 60px);
+    font-weight: 700;
+    color: #ffd0d0;
+    letter-spacing: 6px;
+    text-shadow: 0 1px 0 #8f0000, 0 2px 0 #600000, 0 3px 6px rgba(0,0,0,0.8), 0 0 20px var(--red), 0 0 40px #ff174488;
     line-height: 1.1;
     text-align: center;
 }
 
 .crt-sync-line {
     font-family: 'VT323', monospace;
-    font-size: 16px;
-    color: var(--teal);
-    letter-spacing: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 5px;
     animation: blink 1.5s infinite;
+    text-shadow: 0 1px 0 #008f9f, 0 2px 0 #006070, 0 3px 5px rgba(0,0,0,0.8), 0 0 10px var(--cyan);
 }
 
 .wave-bars {
@@ -1583,9 +1601,11 @@ textarea {
 
 .crt-tag {
     position: absolute;
-    font-size: 10px;
-    color: var(--teal);
-    opacity: 0.8;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cyan);
+    opacity: 0.9;
+    text-shadow: 0 0 5px var(--cyan);
     z-index: 4;
 }
 
@@ -1608,7 +1628,8 @@ textarea {
     bottom: 8px;
     right: 10px;
     font-family: 'VT323', monospace;
-    font-size: 20px;
+    font-size: 22px;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 8px var(--cyan);
 }
 
 .crt-tag.bm {
@@ -1706,12 +1727,15 @@ textarea {
 
 .tc-display {
     font-family: 'VT323', monospace;
-    font-size: 26px;
-    letter-spacing: 3px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 4px;
     background: #000;
-    padding: 3px 10px;
+    padding: 4px 12px;
     border: 1px solid #2a1a00;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .8);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, .9);
+    text-shadow: 0 1px 0 #8f6000, 0 2px 0 #604000, 0 3px 5px rgba(0,0,0,0.8), 0 0 15px var(--amber);
 }
 
 .speed-wrap {
@@ -1722,9 +1746,12 @@ textarea {
 }
 
 .dim-label {
-    font-size: 10px;
-    color: var(--teal);
-    opacity: 0.8;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cyan);
+    opacity: 0.9;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--cyan);
 }
 
 /* ─── KNOB ─── */

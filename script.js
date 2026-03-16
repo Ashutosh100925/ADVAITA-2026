@@ -58,6 +58,11 @@ let glitchTimer = null;
 let pin = "";
 let currentTab = window.location.pathname.includes("/listener") ? "LISTENER" : "BROADCASTER";
 
+// Web Audio for Broadcaster
+let bAudioCtx = null;
+let bAudioSource = null;
+let bAudioDest = null;
+
 /* ─── WEBRTC & SOCKET ─── */
 const ROLE = currentTab === "LISTENER" ? "listener" : "broadcaster";
 const ROOM_ID = "hawkins-room";
@@ -69,17 +74,17 @@ const ICE_SERVERS = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { 
+        {
             urls: 'turn:openrelay.metered.ca:80',
             username: 'openrelayproject',
             credential: 'openrelayproject'
         },
-        { 
+        {
             urls: 'turn:openrelay.metered.ca:443',
             username: 'openrelayproject',
             credential: 'openrelayproject'
         },
-        { 
+        {
             urls: 'turn:openrelay.metered.ca:443?transport=tcp',
             username: 'openrelayproject',
             credential: 'openrelayproject'
@@ -104,6 +109,77 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
 function initBoot() {
     const ps = $("power-switch");
     ps.addEventListener("click", startBoot);
+    initVoiceCommand();
+}
+
+function initVoiceCommand() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function (event) {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim().toLowerCase();
+            console.log("CEREBRO AI HEARD:", command);
+
+            // Allow fuzzy matching
+            if (command.includes("open command system") || command.includes("system") || command.includes("open command")) {
+                const ps = $("power-switch");
+                if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                    const vh = $("voice-hint");
+                    if (vh) {
+                        vh.textContent = "VOICE MATCH: ACCESSING SYSTEM...";
+                        vh.style.color = "var(--amber)";
+                        vh.style.textShadow = "0 0 10px var(--amber)";
+                    }
+
+                    // Add AI voice response
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance("Command system activated");
+                        utterance.rate = 0.9;
+                        utterance.pitch = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    }
+
+                    startBoot();
+                }
+            }
+        };
+
+        recognition.onerror = function (event) {
+            console.warn("Speech recognition error:", event.error);
+        };
+
+        recognition.onend = function () {
+            // Auto restart listener if we're still on the boot screen and not flipped yet
+            const ps = $("power-switch");
+            if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                try { recognition.start(); } catch (e) { }
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch (e) {
+            console.warn("Speech auto-start blocked. Waiting for jumpstart click.", e);
+        }
+
+        // Jumpstart speech on any click to bypass browser auto-play/mic policies safely
+        $("boot-screen").addEventListener("click", () => {
+            const ps = $("power-switch");
+            if (!ps.classList.contains("on")) {
+                try { recognition.start(); } catch (e) { }
+            }
+        }, { once: true });
+
+    } else {
+        const vh = $("voice-hint");
+        if (vh) vh.style.display = "none";
+        console.warn("Speech Recognition API not supported in this browser.");
+    }
 }
 
 function startBoot() {
@@ -117,6 +193,13 @@ function startBoot() {
     if (hint) hint.style.display = "none";
     log.classList.remove("hidden");
     lines.innerHTML = "";
+
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance("System is initializing wait a moment");
+        utterance.rate = 0.9;
+        utterance.pitch = 0.8;
+        window.speechSynthesis.speak(utterance);
+    }
 
     let i = 0;
     const iv = setInterval(() => {
@@ -145,10 +228,45 @@ function initIdent() {
     document.querySelectorAll(".num-btn").forEach(btn => {
         btn.addEventListener("click", () => handleKey(btn.dataset.k));
     });
+
+    // Add physical keyboard support
+    document.addEventListener("keydown", handlePhysicalKeyboard);
+
     $("webcam-btn").addEventListener("click", doWebcam);
 }
 
+function handlePhysicalKeyboard(e) {
+    if ($("ident-screen").classList.contains("hidden")) return;
+
+    const key = e.key;
+    if (key >= '0' && key <= '9') {
+        handleKey(key);
+    } else if (key === 'Enter') {
+        handleKey('OK');
+    } else if (key === 'Backspace' || key === 'Delete' || key === 'Escape') {
+        handleKey('CLR');
+    }
+}
+
 function handleKey(k) {
+    try {
+        const audioCtx = window.AudioContext || window.webkitAudioContext;
+        if (audioCtx) {
+            if (!window.keyBeepCtx) window.keyBeepCtx = new audioCtx();
+            if (window.keyBeepCtx.state === 'suspended') window.keyBeepCtx.resume();
+            const osc = window.keyBeepCtx.createOscillator();
+            const gain = window.keyBeepCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = k === 'CLR' ? 300 : k === 'OK' ? 800 : 600;
+            gain.gain.setValueAtTime(0.1, window.keyBeepCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, window.keyBeepCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(window.keyBeepCtx.destination);
+            osc.start();
+            osc.stop(window.keyBeepCtx.currentTime + 0.1);
+        }
+    } catch (e) { }
+
     if (k === "CLR") { pin = ""; updatePinDots(); return; }
     if (k === "OK") { submitPin(); return; }
     if (pin.length < 4) { pin += k; updatePinDots(); }
@@ -181,6 +299,7 @@ function verifySuccess() {
     $("pin-section").classList.add("hidden");
     $("id-avatar").textContent = "✓";
     $("id-verified").classList.remove("hidden");
+    document.removeEventListener("keydown", handlePhysicalKeyboard);
     setTimeout(showMain, 1500);
 }
 
@@ -191,7 +310,7 @@ async function doWebcam() {
     const btn = $("webcam-btn");
     if (btn.disabled) return;
     btn.disabled = true;
-    
+
     const v = $("webcam-video");
     const av = $("id-avatar");
     const scanBar = $("scan-bar");
@@ -200,11 +319,11 @@ async function doWebcam() {
     const originalClearance = idClearance.textContent;
 
     pinErr.classList.add("hidden");
-    
+
     // Cinematic statuses
     const setStatus = (msg) => { idClearance.textContent = "STATUS: " + msg; idClearance.style.color = "var(--amber)"; };
     const playBeep = () => { /* reuse simple audio context beep if desired or just visual */ };
-    
+
     setStatus("INITIALIZING CAMERA...");
 
     try {
@@ -214,7 +333,7 @@ async function doWebcam() {
         v.srcObject = webcamStream;
         av.style.display = "none";
         v.classList.remove("hidden");
-        
+
         setTimeout(() => setStatus("CAMERA LINK ESTABLISHED"), 600);
         setTimeout(() => {
             scanBar.classList.remove("hidden");
@@ -222,36 +341,51 @@ async function doWebcam() {
         }, 1400);
         setTimeout(() => setStatus("DETECTING FACIAL REGION..."), 2200);
         setTimeout(() => setStatus("RUNNING IDENTITY CHECK..."), 3000);
-        
+
         // Capture frame at 3.0s
         setTimeout(async () => {
             const canvas = $("webcam-canvas");
             const ctx = canvas.getContext("2d");
             ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-            
+
             setStatus("VALIDATING SECURITY PROFILE...");
-            
+
             try {
                 const res = await fetch("/verify", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ image: dataUrl })
                 });
-                
+
                 const result = await res.json();
-                
+
                 scanBar.classList.add("hidden");
-                
+
                 if (result.verified) {
                     idClearance.style.color = "var(--green)";
                     idClearance.textContent = `CONFIDENCE: ${(result.confidence * 100).toFixed(1)}% — MATCH`;
+
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance("Access Granted");
+                        utterance.rate = 0.9;
+                        utterance.pitch = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    }
+
                     setTimeout(verifySuccess, 1000);
                 } else {
                     failedAttempts++;
                     idClearance.style.color = "var(--red)";
                     idClearance.textContent = `CONFIDENCE: ${(result.confidence * 100).toFixed(1)}% — MISMATCH`;
-                    
+
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance("Access Denied");
+                        utterance.rate = 0.9;
+                        utterance.pitch = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    }
+
                     if (failedAttempts >= 5) {
                         pinErr.textContent = "⚠ SECURITY RISK DETECTED — LOCKOUT ESCALATED";
                         pinErr.classList.remove("hidden");
@@ -274,7 +408,7 @@ async function doWebcam() {
                 setTimeout(() => { idClearance.style.color = ""; idClearance.textContent = originalClearance; }, 2000);
             }
         }, 3000);
-        
+
     } catch (err) {
         setStatus("CAMERA OFFLINE. CHECK HARDWARE.");
         idClearance.style.color = "var(--red)";
@@ -289,7 +423,7 @@ async function doWebcam() {
 function showMain() {
     $("ident-screen").classList.add("hidden");
     $("main-panel").classList.remove("hidden");
-    
+
     document.querySelectorAll(".tab-btn").forEach(b => {
         b.classList.toggle("active", b.dataset.tab === currentTab);
     });
@@ -346,18 +480,18 @@ function initMain() {
         }
         $("file-input").click();
     });
-    
+
     $("file-input").addEventListener("change", e => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         // Basic type validation
         if (!file.type.startsWith("video/")) {
             showToast("SIGNAL ERROR", "Invalid video format");
             addMsg("SYSTEM", "SIGNAL FAILED — UNSUPPORTED MEDIA TYPE", RED, true);
             return;
         }
-        
+
         uploadName = file.name;
         loadMedia(URL.createObjectURL(file), uploadName);
     });
@@ -398,7 +532,7 @@ function copyCode() {
 /* ─── SOCKET & WEBRTC LOGIC ─── */
 function initSocketAndWebRTC() {
     if (!socket) return;
-    
+
     socket.emit('join-room', { roomId: ROOM_ID, role: ROLE });
 
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -424,7 +558,7 @@ function initSocketAndWebRTC() {
 
     if (ROLE === 'broadcaster') {
         socket.on('listener-joined', async ({ socketId }) => {
-            addMsg("SYSTEM", `Listener joined: ${socketId.substring(0,4)}`, GREEN, true);
+            addMsg("SYSTEM", `Listener joined: ${socketId.substring(0, 4)}`, GREEN, true);
             createPeerConnection(socketId);
             spawnAgent(socketId);
         });
@@ -448,7 +582,7 @@ function initSocketAndWebRTC() {
             if (pc && pc.remoteDescription) {
                 try {
                     await pc.addIceCandidate(new RTCIceCandidate(candidate));
-                } catch(e){}
+                } catch (e) { }
             }
         });
 
@@ -474,9 +608,49 @@ function initSocketAndWebRTC() {
     });
 }
 
+function establishLocalStream() {
+    const video = $("main-video");
+    if (!video || !video.src) return;
+
+    try {
+        if (!localStream) {
+            if (video.captureStream) {
+                localStream = video.captureStream();
+            } else if (video.mozCaptureStream) {
+                localStream = video.mozCaptureStream();
+            }
+        }
+
+        if (!localStream) {
+            console.warn("Could not capture stream from video element.");
+            return;
+        }
+
+        console.log("Stream captured:", localStream.getTracks().map(t => t.kind + (t.enabled ? ':enabled' : ':disabled')).join(', '));
+
+        // Ensure tracks are flowing
+        localStream.getTracks().forEach(t => t.enabled = true);
+
+        // Update existing peer connections
+        Object.values(peerConnections).forEach(pc => {
+            const vTrack = localStream.getVideoTracks()[0] || null;
+            const aTrack = localStream.getAudioTracks()[0] || null;
+
+            if (pc._vSender) pc._vSender.replaceTrack(vTrack);
+            if (pc._aSender) pc._aSender.replaceTrack(aTrack);
+        });
+    } catch (e) {
+        console.error("Failed to capture stream natively:", e);
+    }
+}
+
 function createPeerConnection(targetSocketId) {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     peerConnections[targetSocketId] = pc;
+
+    // Force create transceivers so SDP always has m=audio and m=video
+    pc._vSender = pc.addTransceiver('video', { direction: 'sendonly' }).sender;
+    pc._aSender = pc.addTransceiver('audio', { direction: 'sendonly' }).sender;
 
     pc.onicecandidate = (event) => {
         if (event.candidate) {
@@ -485,7 +659,8 @@ function createPeerConnection(targetSocketId) {
     };
 
     if (localStream) {
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        if (localStream.getVideoTracks()[0]) pc._vSender.replaceTrack(localStream.getVideoTracks()[0]);
+        if (localStream.getAudioTracks()[0]) pc._aSender.replaceTrack(localStream.getAudioTracks()[0]);
     }
     let negotiationTimeout = null;
     pc.onnegotiationneeded = () => {
@@ -525,7 +700,7 @@ function spawnAgent(socketId) {
     // Pick next available name/color or fallback
     const usedIndices = Object.values(activeAgents).map(a => a.rosterIndex);
     let rosterIndex = AGENT_ROSTER.findIndex((_, i) => !usedIndices.includes(i));
-    
+
     let identity;
     if (rosterIndex === -1) {
         const count = Object.keys(activeAgents).length + 1;
@@ -559,18 +734,18 @@ function spawnAgent(socketId) {
     `;
 
     body.appendChild(tr);
-    
+
     // Add to radar
-    const blip = { 
-        x: 0.2 + Math.random() * 0.6, 
-        y: 0.2 + Math.random() * 0.6, 
-        r: 3, 
-        col: `var(--${identity.color})` 
+    const blip = {
+        x: 0.2 + Math.random() * 0.6,
+        y: 0.2 + Math.random() * 0.6,
+        r: 3,
+        col: `var(--${identity.color})`
     };
 
     activeAgents[socketId] = { rosterIndex, element: tr, name: identity.name, blip };
     if (window.radarBlips) window.radarBlips.push(blip);
-    
+
     showJoinToast(`${identity.name} JOINED THE SERVER`, true);
 }
 
@@ -580,7 +755,7 @@ function removeAgent(socketId) {
 
     data.element.classList.remove("agent-row-enter");
     data.element.classList.add("agent-row-leave");
-    
+
     // Remove from radar
     if (window.radarBlips && data.blip) {
         window.radarBlips = window.radarBlips.filter(b => b !== data.blip);
@@ -615,24 +790,7 @@ function showJoinToast(msg, isJoin) {
     setTimeout(() => div.remove(), 3500);
 }
 
-function establishLocalStream() {
-    const video = $("main-video");
-    if (!video) return;
-    
-    if (video.captureStream) {
-        localStream = video.captureStream();
-    } else if (video.mozCaptureStream) {
-        localStream = video.mozCaptureStream();
-    }
-    
-    if (localStream) {
-        Object.keys(peerConnections).forEach(socketId => {
-            const pc = peerConnections[socketId];
-            pc.getSenders().forEach(sender => pc.removeTrack(sender));
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-        });
-    }
-}
+// Removed duplicate establishLocalStream function
 
 /* ─── PLAYBACK ─── */
 function togglePlay() {
@@ -700,7 +858,7 @@ function togglePlay() {
                         window.frameCtx.drawImage(video, 0, 0, 640, 360);
                         const frameData = window.frameCanvas.toDataURL("image/jpeg", 0.5);
                         socket.emit("broadcaster-video-frame", { roomId: ROOM_ID, frame: frameData });
-                    } catch(e) {}
+                    } catch (e) { }
                 }
             } else {
                 tc = Math.min(tc + speed, TOTAL_TC);
@@ -1240,13 +1398,18 @@ function handleIntercept() {
 function loadMedia(src, name) {
     uploadName = name;
     const qn = $("queue-name");
-    qn.textContent = name;
-    qn.classList.add("loaded");
-    $("upload-btn").textContent = "▲ " + name.substr(0, 10) + "…";
+    if (qn) {
+        qn.textContent = name;
+        qn.classList.add("loaded");
+    }
+    if ($("upload-btn")) $("upload-btn").textContent = "▲ " + name.substr(0, 10) + "…";
 
     const video = $("main-video");
     if (video) {
+        video.crossOrigin = "anonymous";
         video.src = src;
+        video.muted = false;
+        video.volume = vol / 100;
         video.load();
         video.onloadedmetadata = () => {
             TOTAL_TC = video.duration || TOTAL_TC;
@@ -1258,6 +1421,9 @@ function loadMedia(src, name) {
             if (waveBars) waveBars.style.display = "none";
             addMsg("SYSTEM", "SIGNAL LOCKED: " + name, GREEN, true);
             showToast("MEDIA READY", name);
+            // Don't capture yet, wait for user TO PLAY
+        };
+        video.onplay = () => {
             establishLocalStream();
         };
         video.onerror = () => {

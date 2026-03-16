@@ -365,18 +365,22 @@
         }
 
         .sb-logo {
-            font-size: 32px;
+            font-size: clamp(40px, 6vw, 80px);
             font-weight: 900;
-            color: var(--amber);
-            text-shadow: var(--ga);
-            letter-spacing: 8px;
+            color: #ffb84d; /* Bright amber */
+            letter-spacing: 14px;
+            text-shadow: 0 1px 0 #cc7000, 0 2px 0 #995000, 0 3px 0 #663000, 0 4px 6px rgba(0,0,0,0.8), 0 0 15px var(--amber), 0 0 30px var(--amber), 0 0 60px rgba(255,171,0,0.6);
+            margin-bottom: 5px;
             animation: glitch 12s infinite
         }
 
         .sb-sub {
-            font-size: 12px;
-            color: var(--dim);
-            letter-spacing: 5px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #e0faff; /* Light cyan */
+            letter-spacing: 6px;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 8px var(--cyan);
+            margin-bottom: 20px;
             text-transform: uppercase
         }
 
@@ -428,21 +432,28 @@
         }
 
         .sb-status {
-            font-size: 14px;
-            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 18px;
+            font-weight: 900;
+            color: #88ffbb; /* Light green */
             letter-spacing: 4px;
-            text-shadow: var(--gg);
+            margin: 25px 0 15px;
+            text-shadow: 0 1px 0 #006633, 0 2px 0 #004422, 0 3px 5px rgba(0,0,0,0.8), 0 0 10px var(--green), 0 0 20px rgba(0,230,118,0.5);
             animation: blink 2s infinite
         }
 
         .sb-agent {
-            font-size: 11px;
-            color: var(--dim);
-            letter-spacing: 3px
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 3px;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 6px var(--cyan);
         }
 
         .sb-agent span {
-            color: var(--amber)
+            color: var(--amber);
+            font-weight: 900;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 8px var(--amber);
         }
 
         .sb-leds {
@@ -485,15 +496,20 @@
         }
 
         .sb-conn {
-            font-size: 10px;
+            margin-top: 30px;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--dim);
             letter-spacing: 2px;
+            line-height: 1.8;
             text-align: center;
-            line-height: 2
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8);
         }
 
         .sb-conn span {
-            color: var(--green)
+            color: #88ffbb;
+            font-weight: 900;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 6px var(--green);
         }
 
         /* demo trigger btn — small, bottom right */
@@ -897,17 +913,19 @@
         }
 
         .ls-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 900;
-            color: var(--amber);
-            text-shadow: var(--ga);
+            color: #ffb84d; /* Bright amber */
+            text-shadow: 0 1px 0 #cc7000, 0 2px 0 #995000, 0 3px 0 rgba(0,0,0,0.8), 0 0 15px var(--amber);
             letter-spacing: 5px;
             animation: glitch 14s infinite
         }
 
         .ls-sub {
-            font-size: 10px;
-            color: var(--dim);
+            font-size: 11px;
+            font-weight: 700;
+            color: #e0faff; /* Light cyan */
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 5px var(--cyan);
             letter-spacing: 3px;
             margin-top: 2px
         }
@@ -916,10 +934,12 @@
             font-size: 11px;
             font-weight: 900;
             color: var(--cyan);
-            border: 1px solid var(--cyan);
+            border: 2px solid var(--cyan);
             padding: 5px 14px;
             letter-spacing: 3px;
             margin-left: auto;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 6px currentColor;
+            box-shadow: inset 0 0 8px rgba(0,188,212,0.3);
             animation: blink 2s infinite
         }
 
@@ -930,14 +950,17 @@
         }
 
         .ls-agent {
-            font-size: 11px;
+            font-size: 12px;
+            font-weight: 700;
             color: var(--dim);
-            letter-spacing: 2px
+            letter-spacing: 2px;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.8);
         }
 
         .ls-agent span {
-            color: var(--amber);
-            font-weight: 700
+            color: #ffb84d; /* Bright amber */
+            font-weight: 900;
+            text-shadow: 0 1px 0 #995000, 0 0 8px var(--amber);
         }
 
         .ls-leds {
@@ -1720,7 +1743,8 @@
             </div>
             <div class="ls-agent">AGENT: <span id="mainAgent">DUSTIN</span></div>
             <div class="ls-badge live" id="lsBadge">● RECEIVING LIVE</div>
-            <div style="font-size:18px;color:var(--amber);opacity:.5;letter-spacing:3px;margin-left:8px">AX-749</div>
+            <button id="lsAudioSync" style="background: linear-gradient(180deg, #0d1f1f, #060f0f); color:var(--cyan); border:2px solid var(--border); box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.05); padding:6px 12px; font-family:inherit; font-size:11px; font-weight:700; text-shadow: 0 1px 0 rgba(0,0,0,0.8), 0 0 6px var(--cyan); cursor:pointer; letter-spacing:2px; margin-left:10px; border-radius:3px; display:none; white-space:nowrap;">🔊 RESYNC AUDIO</button>
+            <div style="font-size:22px; font-weight:900; color:#ffb84d; text-shadow: 0 1px 0 #995000, 0 3px 5px rgba(0,0,0,0.8), 0 0 10px var(--amber); letter-spacing:4px; margin-left:15px">AX-749</div>
         </div>
 
         <!-- body -->
@@ -1756,7 +1780,8 @@
                         <span class="ls-vcorner bl">ROOM: AX-749</span>
                         <span class="ls-vcorner br" id="vcTc">00:00:00</span>
                         <img id="fallback-video" class="hidden" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:0; transition: opacity 0.5s ease;">
-                        <video id="remote-video" class="hidden" autoplay playsinline style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:0; transition: opacity 0.5s ease;"></video>
+                        <video id="remote-video" class="hidden" autoplay playsinline preload="auto" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0; z-index:0; transition: opacity 0.5s ease;"></video>
+                        <button id="unlock-btn" onclick="unlockAudio()" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: #600; color: #fff; border: 2px solid #f00; padding: 15px 30px; font-family: 'VT323', monospace; font-size: 24px; cursor: pointer; border-radius: 5px; box-shadow: 0 0 15px #f00; letter-spacing: 2px; transition: all 0.3s ease;">◉ ACTIVATE AUDIO FEED</button>
                     </div>
                 </div>
 
@@ -1827,6 +1852,8 @@
                             id="bcTc">00:00:00</span></div>
                     <div class="ls-cr"><span class="ls-ck">MY TIMECODE</span><span class="ls-cv c"
                             id="myTc">00:00:00</span></div>
+                    <div class="ls-cr"><span class="ls-ck">SYNC DELTA</span><span class="ls-cv g"
+                            id="syncDelta">+000ms</span></div>
                     <div class="ls-cr"><span class="ls-ck">ICE STATE</span><span class="ls-cv g">CONNECTED</span></div>
                     <div class="ls-cr"><span class="ls-ck">PEERS</span><span class="ls-cv">4 ONLINE</span></div>
                 </div>
@@ -2015,7 +2042,7 @@
 
         // ── MAIN SCREEN & WEBRTC ──
         let socket, pc;
-        let mcur = 0, mPlaying = false;
+        let mcur = 0, remoteTc = 0, mPlaying = false;
         const fmt = s => { const p = v => String(v).padStart(2, '0'); return p(Math.floor(s / 3600)) + ':' + p(Math.floor((s % 3600) / 60)) + ':' + p(Math.floor(s % 60)) };
 
         const ICE_SERVERS = {
@@ -2097,7 +2124,12 @@
                 mPlaying = true;
                 const v = document.getElementById('remote-video');
                 if (v) {
-                    v.play().catch(e => console.warn("Play blocked:", e));
+                    v.muted = false;
+                    v.play().catch(e => {
+                        console.warn("Play blocked, retrying muted:", e);
+                        v.muted = true;
+                        v.play();
+                    });
                 }
             });
 
@@ -2105,12 +2137,13 @@
                 mPlaying = false;
                 const v = document.getElementById('remote-video');
                 if (v) v.pause();
-                if (data && data.tc !== undefined) mcur = data.tc;
+                if (data && data.tc !== undefined) { mcur = data.tc; remoteTc = data.tc; }
             });
 
             socket.on('sync-seek', (data) => {
                 if (data && data.tc !== undefined) {
                     mcur = data.tc;
+                    remoteTc = data.tc;
                     const v = document.getElementById('remote-video');
                     if (v) v.currentTime = mcur;
                 }
@@ -2139,14 +2172,19 @@
 
             socket.on('sync-sync-state', (data) => {
                 mPlaying = data.playing;
-                mcur = data.tc;
+                remoteTc = data.tc; // Broadcaster's actual current time
                 const v = document.getElementById('remote-video');
                 if (v) {
-                    if (Math.abs(v.currentTime - mcur) > 1.5) {
-                        v.currentTime = mcur;
+                    if (Math.abs(v.currentTime - remoteTc) > 1.5) {
+                        v.currentTime = remoteTc;
                     }
                     if (mPlaying && v.paused) {
-                        v.play().catch(e => console.warn("Auto-play blocked:", e));
+                        v.muted = false;
+                        v.play().catch(e => {
+                            console.warn("Auto-play blocked, retrying muted:", e);
+                            v.muted = true;
+                            v.play();
+                        });
                     } else if (!mPlaying && !v.paused) {
                         v.pause();
                     }
@@ -2159,11 +2197,20 @@
             });
 
             startMainTick();
+            
+            if (!window.isSecureContext && window.location.hostname !== 'localhost') {
+                addLsMsg('sy', '⚠ SECURITY ALERT', 'INSECURE CONTEXT (HTTP). Browser will block WebRTC and Audio. Use HTTPS.');
+                showToast("SECURITY ERROR", "HTTPS is REQUIRED for Audio Sync");
+            }
         }
 
         function createPeerConnection(targetId) {
             const newPc = new RTCPeerConnection(ICE_SERVERS);
             
+            // Force transceivers for receiving
+            newPc.addTransceiver('video', { direction: 'recvonly' });
+            newPc.addTransceiver('audio', { direction: 'recvonly' });
+
             newPc.oniceconnectionstatechange = () => {
                 addLsMsg('sy', '📡 STATUS', 'ICE State: ' + newPc.iceConnectionState.toUpperCase());
                 if (newPc.iceConnectionState === 'disconnected' || newPc.iceConnectionState === 'failed') {
@@ -2180,12 +2227,28 @@
             newPc.ontrack = (event) => {
                 const video = document.getElementById('remote-video');
                 const fb = document.getElementById('fallback-video');
+                
+                const t = event.track;
+                console.log(`📡 TRACK RX: ${t.kind} | Enabled: ${t.enabled} | Muted: ${t.muted} | Stream: ${event.streams[0]?.id}`);
+                
+                // Monitor track state changes
+                t.onunmute = () => console.log(`🔊 TRACK ACTIVATED: ${t.kind}`);
+                t.onmute = () => console.warn(`🔇 TRACK SILENCED: ${t.kind}`);
+
                 if (video) {
-                    video.srcObject = event.streams[0];
+                    // Attach the stream if not already attached
+                    if (video.srcObject !== event.streams[0]) {
+                        video.srcObject = event.streams[0];
+                    }
+
+                    if (event.track.kind === 'audio') {
+                        const btn = document.getElementById('lsAudioSync');
+                        if (btn) btn.style.display = "block";
+                    }
+
                     video.classList.remove('hidden');
                     video.style.opacity = '1';
                     
-                    // Hide fallback to save GPU
                     if (fb) {
                         fb.classList.add('hidden');
                         fb.src = "";
@@ -2198,27 +2261,49 @@
                     if (waves) waves.style.display = "none";
 
                     if (mPlaying) {
-                        video.play().catch(e => console.warn("Auto-play blocked:", e));
+                        video.muted = false;
+                        video.play().catch(e => {
+                            console.warn("Auto-play blocked, playing muted:", e);
+                            video.muted = true;
+                            video.play();
+                        });
                     }
                 }
             };
+
             return newPc;
         }
 
         let mainIv = null;
         function updateStats() {
-            const tcStr = fmt(mcur);
-            document.getElementById('vcTc').textContent = tcStr;
-            document.getElementById('myTc').textContent = tcStr;
-            document.getElementById('bcTc').textContent = tcStr;
+            const v = document.getElementById('remote-video');
+            if (v && !v.paused && mPlaying) {
+                mcur = v.currentTime;
+            }
+
+            const tcStrLocal = fmt(mcur);
+            const tcStrRemote = fmt(remoteTc);
+            
+            document.getElementById('vcTc').textContent = tcStrLocal;
+            document.getElementById('myTc').textContent = tcStrLocal;
+            document.getElementById('bcTc').textContent = tcStrRemote;
+
+            // Sync Delta Calculation (Difference between remote and local in milliseconds)
+            let deltaMs = Math.round((mcur - remoteTc) * 1000);
+            const deltaEl = document.getElementById('syncDelta');
+            if (deltaEl) {
+                if (!mPlaying && mcur === 0) deltaMs = 0; // handle pristine state
+                deltaEl.textContent = (deltaMs >= 0 ? '+' : '') + deltaMs + 'ms';
+                deltaEl.className = 'ls-cv ' + (Math.abs(deltaMs) < 150 ? 'g' : (Math.abs(deltaMs) < 600 ? 'a' : 'c'));
+            }
 
             // Simple simulated jitter for UI flair, network looks active
             const lat = 18 + Math.floor(Math.random() * 10);
-            const drift = 5 + Math.floor(Math.random() * 10);
             document.getElementById('statLat').textContent = lat + 'ms';
-            document.getElementById('statDrift').textContent = '+' + drift + 'ms';
             
-            const syncPct = mPlaying ? (94 + Math.floor(Math.random() * 6)) : 100;
+            document.getElementById('statDrift').textContent = (deltaMs >= 0 ? '+' : '') + deltaMs + 'ms';
+            
+            const syncPct = Math.abs(deltaMs) < 100 ? (98 + Math.floor(Math.random() * 2)) : (Math.max(10, 100 - Math.floor(Math.abs(deltaMs)/50)));
             document.getElementById('syncPct').textContent = syncPct + '%';
             document.getElementById('syncFill').style.width = syncPct + '%';
         }
@@ -2254,10 +2339,72 @@
             const inp = document.getElementById('lsChatInput');
             if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') lsSendMsg() });
             initNetwork();
+            
+            // Audio Sync Logic
+            const audioBtn = document.getElementById('lsAudioSync');
+            if (audioBtn) {
+                audioBtn.addEventListener('click', () => {
+                    const v = document.getElementById('remote-video');
+                    if (v) {
+                        v.muted = false;
+                        v.volume = 1.0;
+                        v.play().then(() => {
+                            addLsMsg('sy', '🔊 AUDIO', 'MANUAL SYNC SUCCESSFUL');
+                            audioBtn.style.display = "none";
+                            const unlock = document.getElementById('unlock-btn');
+                            if (unlock) unlock.style.display = "none";
+                        }).catch(e => {
+                            console.error("Manual sync failed", e);
+                            addLsMsg('sy', 'ERR', 'SYNC BLOCKED BY BROWSER');
+                        });
+                    }
+                });
+            }
+
+            // Global Click Unlock
+            document.addEventListener('click', () => {
+                const v = document.getElementById('remote-video');
+                if (v) {
+                    v.muted = false;
+                    v.volume = 1.0;
+                }
+            }, { once: true });
+
+            // Manual Resync Button
+            const resyncBtn = document.getElementById('lsResync');
+            if (resyncBtn) {
+                resyncBtn.addEventListener('click', () => {
+                    const v = document.getElementById('remote-video');
+                    if (v) {
+                        // Request current state from server
+                        socket.emit('sync-request-state', { roomId: ROOM_ID });
+                        addLsMsg('sy', '🔄 SYNC', 'REQUESTING STATE FROM SERVER...');
+                    }
+                });
+            }
         });
+
+        function unlockAudio() {
+            const v = document.getElementById('remote-video');
+            const btn = document.getElementById('unlock-btn');
+            
+            // Create and resume AudioContext if available via window
+            const audioCtx = window.AudioContext || window.webkitAudioContext;
+            if (audioCtx) {
+                const ctx = new audioCtx();
+                ctx.resume().then(() => console.log("AudioContext resumed"));
+            }
+
+            if (v) {
+                v.muted = false;
+                v.volume = 1.0;
+                v.play().catch(e => console.warn("Unlock play error:", e));
+            }
+
+            if (btn) btn.style.display = 'none';
+            console.log("Audio unlocked");
+        }
     </script>
 </body>
 
 </html>
-
-
