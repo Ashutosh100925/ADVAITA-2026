@@ -103,84 +103,15 @@ const nowTime = () => new Date().toLocaleTimeString("en", { hour: "2-digit", min
 const $ = id => document.getElementById(id);
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
 
+
 /* ═══════════════════════════════════════════════════
    BOOT SCREEN
 ═══════════════════════════════════════════════════ */
 function initBoot() {
     const ps = $("power-switch");
     ps.addEventListener("click", startBoot);
-    initVoiceCommand();
 }
 
-function initVoiceCommand() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-
-        recognition.onresult = function (event) {
-            const last = event.results.length - 1;
-            const command = event.results[last][0].transcript.trim().toLowerCase();
-            console.log("CEREBRO AI HEARD:", command);
-
-            // Allow fuzzy matching
-            if (command.includes("open command system") || command.includes("system") || command.includes("open command")) {
-                const ps = $("power-switch");
-                if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
-                    const vh = $("voice-hint");
-                    if (vh) {
-                        vh.textContent = "VOICE MATCH: ACCESSING SYSTEM...";
-                        vh.style.color = "var(--amber)";
-                        vh.style.textShadow = "0 0 10px var(--amber)";
-                    }
-
-                    // Add AI voice response
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance("Command system activated");
-                        utterance.rate = 0.9;
-                        utterance.pitch = 0.8;
-                        window.speechSynthesis.speak(utterance);
-                    }
-
-                    startBoot();
-                }
-            }
-        };
-
-        recognition.onerror = function (event) {
-            console.warn("Speech recognition error:", event.error);
-        };
-
-        recognition.onend = function () {
-            // Auto restart listener if we're still on the boot screen and not flipped yet
-            const ps = $("power-switch");
-            if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
-                try { recognition.start(); } catch (e) { }
-            }
-        };
-
-        try {
-            recognition.start();
-        } catch (e) {
-            console.warn("Speech auto-start blocked. Waiting for jumpstart click.", e);
-        }
-
-        // Jumpstart speech on any click to bypass browser auto-play/mic policies safely
-        $("boot-screen").addEventListener("click", () => {
-            const ps = $("power-switch");
-            if (!ps.classList.contains("on")) {
-                try { recognition.start(); } catch (e) { }
-            }
-        }, { once: true });
-
-    } else {
-        const vh = $("voice-hint");
-        if (vh) vh.style.display = "none";
-        console.warn("Speech Recognition API not supported in this browser.");
-    }
-}
 
 function startBoot() {
     const ps = $("power-switch");
@@ -325,6 +256,16 @@ async function doWebcam() {
     const playBeep = () => { /* reuse simple audio context beep if desired or just visual */ };
 
     setStatus("INITIALIZING CAMERA...");
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        const msg = isSecureMicContext() ? "HARDWARE NOT FOUND" : "INSECURE CONTEXT BLOCKED";
+        console.error(`CEREBRO WEBCAM ERROR: ${msg}`);
+        setStatus(msg);
+        idClearance.style.color = "var(--red)";
+        btn.disabled = false;
+        showToast("SIGNAL ALERT", "Camera access failed: " + msg);
+        return;
+    }
 
     try {
         if (!webcamStream) {
@@ -525,8 +466,29 @@ function setJoinCodes() {
     $("join-code-ctrl").textContent = JOIN_CODE;
 }
 function copyCode() {
-    navigator.clipboard?.writeText(JOIN_CODE);
-    addMsg("SYSTEM", "Join code copied: " + JOIN_CODE, TEAL, true);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(JOIN_CODE).then(() => {
+            addMsg("SYSTEM", "Join code copied: " + JOIN_CODE, TEAL, true);
+        }).catch(() => {
+            legacyCopyCode();
+        });
+    } else {
+        legacyCopyCode();
+    }
+}
+
+function legacyCopyCode() {
+    const el = document.createElement('textarea');
+    el.value = JOIN_CODE;
+    document.body.appendChild(el);
+    el.select();
+    try {
+        document.execCommand('copy');
+        addMsg("SYSTEM", "Join code copied (legacy): " + JOIN_CODE, TEAL, true);
+    } catch (err) {
+        addMsg("SYSTEM", "Copy failed. Code: " + JOIN_CODE, RED, true);
+    }
+    document.body.removeChild(el);
 }
 
 /* ─── SOCKET & WEBRTC LOGIC ─── */

@@ -197,7 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INTERACTIVITY / EXPERIENCE TRANSITION --- //
     const enterBtn = document.getElementById('enter-btn');
-    enterBtn.addEventListener('click', () => {
+
+    function startTransition() {
+        if (document.body.classList.contains('transitioning')) return;
+        
         // Trigger glitch out sequence
         document.body.classList.add('transitioning');
         
@@ -208,5 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             window.location.href = '/broadcaster';
         }, 2000);
-    });
+    }
+
+    enterBtn.addEventListener('click', startTransition);
+
 });

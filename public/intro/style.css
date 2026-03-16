@@ -550,3 +550,11 @@ body.flash .creature-far {
         letter-spacing: 0.2em;
     }
 }
+@keyframes pulse-fast {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.98); }
+}
+
+.pulse-fast {
+    animation: pulse-fast 1s infinite ease-in-out;
+}
