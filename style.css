@@ -2554,3 +2554,22 @@ textarea {
         flex: 1;
     }
 }
+
+/* ─── NETWORK INFO ─── */
+.network-info {
+    margin-top: 15px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    line-height: 1.5;
+    white-space: pre;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+}
+
+.network-info.show {
+    opacity: 1;
+}

@@ -78,6 +78,7 @@ app.post('/verify', (req, res) => {
 const rooms = {};
 
 io.on('connection', (socket) => {
+    socket.emit('server-ip', localIp);
     socket.on('join-room', ({ roomId, role }) => {
         socket.join(roomId);
         if (!rooms[roomId]) rooms[roomId] = { broadcaster: null, listeners: new Set(), state: {} };
@@ -146,14 +147,32 @@ const PORT = process.env.PORT || 3000;
 
 function getLocalIp() {
     const interfaces = os.networkInterfaces();
+    let bestIp = '0.0.0.0';
+    
+    // Prioritize Wi-Fi and Ethernet
+    const priorityNames = ['wi-fi', 'wifi', 'ethernet', 'en', 'eth', 'wlan', 'wireless'];
+    const skipNames = ['vbox', 'virtual', 'vmware', 'wsl', 'veth', 'docker', 'br-', 'lo', 'internal'];
+
     for (const name of Object.keys(interfaces)) {
+        const lowerName = name.toLowerCase();
+        
+        // Skip common virtual/internal interfaces
+        if (skipNames.some(skip => lowerName.includes(skip))) continue;
+
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
+                // If it's a priority name, return immediately
+                if (priorityNames.some(p => lowerName.includes(p))) {
+                    return iface.address;
+                }
+                // Otherwise, keep as a possible best IP if we haven't found a better one
+                if (bestIp === '0.0.0.0') {
+                    bestIp = iface.address;
+                }
             }
         }
     }
-    return '0.0.0.0';
+    return bestIp;
 }
 
 const localIp = getLocalIp();

@@ -138,7 +138,7 @@ function initVoiceCommand() {
             console.log("CEREBRO AI HEARD:", command);
             
             // Allow fuzzy matching
-            if (command.includes("open command system") || command.includes("system") || command.includes("open command")) {
+            if (command.includes("open system command") || command.includes("system") || command.includes("system command")) {
                 const ps = $("power-switch");
                 if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
                     const vh = $("voice-hint");
@@ -543,6 +543,21 @@ function initSocketAndWebRTC() {
 
     socket.on('connect', () => {
         addMsg("SYSTEM", "SOCKET CONNECTED", GREEN, true);
+    });
+
+    socket.on('server-ip', (ip) => {
+        const netInfo = $("network-info");
+        if (netInfo) {
+            netInfo.innerHTML = `
+═══════════════════════════════════════════════════
+       CEREBRO SERVER PROTOCOL ACTIVATED
+═══════════════════════════════════════════════════
+  LOCAL ACCESS:  http://localhost:3000
+  NETWORK:       http://${ip}:3000
+  LISTENER:      http://${ip}:3000/listener
+═══════════════════════════════════════════════════`;
+            netInfo.classList.add("show");
+        }
     });
 
     socket.on('connect_error', (err) => {

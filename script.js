@@ -110,6 +110,77 @@ const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) 
 function initBoot() {
     const ps = $("power-switch");
     ps.addEventListener("click", startBoot);
+    initVoiceCommand();
+}
+
+function initVoiceCommand() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function(event) {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim().toLowerCase();
+            console.log("CEREBRO AI HEARD:", command);
+            
+            // Allow fuzzy matching
+            if (command.includes("open system command") || command.includes("system") || command.includes("system command")) {
+                const ps = $("power-switch");
+                if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                    const vh = $("voice-hint");
+                    if(vh) {
+                        vh.textContent = "VOICE MATCH: ACCESSING SYSTEM...";
+                        vh.style.color = "var(--amber)";
+                        vh.style.textShadow = "0 0 10px var(--amber)";
+                    }
+                    
+                    // Add AI voice response
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance("Command system activated");
+                        utterance.rate = 0.9;
+                        utterance.pitch = 0.8;
+                        window.speechSynthesis.speak(utterance);
+                    }
+                    
+                    startBoot();
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.warn("Speech recognition error:", event.error);
+        };
+
+        recognition.onend = function() {
+            // Auto restart listener if we're still on the boot screen and not flipped yet
+            const ps = $("power-switch");
+            if (!$("boot-screen").classList.contains("hidden") && !ps.classList.contains("on")) {
+                try { recognition.start(); } catch(e){}
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch(e) {
+            console.warn("Speech auto-start blocked. Waiting for jumpstart click.", e);
+        }
+        
+        // Jumpstart speech on any click to bypass browser auto-play/mic policies safely
+        $("boot-screen").addEventListener("click", () => {
+             const ps = $("power-switch");
+             if (!ps.classList.contains("on")) {
+                 try { recognition.start(); } catch(e){}
+             }
+        }, {once: true});
+        
+    } else {
+        const vh = $("voice-hint");
+        if(vh) vh.style.display = "none";
+        console.warn("Speech Recognition API not supported in this browser.");
+    }
 }
 
 
@@ -507,6 +578,21 @@ function initSocketAndWebRTC() {
 
     socket.on('connect', () => {
         addMsg("SYSTEM", "SOCKET CONNECTED", GREEN, true);
+    });
+
+    socket.on('server-ip', (ip) => {
+        const netInfo = $("network-info");
+        if (netInfo) {
+            netInfo.innerHTML = `
+═══════════════════════════════════════════════════
+       CEREBRO SERVER PROTOCOL ACTIVATED
+═══════════════════════════════════════════════════
+  LOCAL ACCESS:  http://localhost:3000
+  NETWORK:       http://${ip}:3000
+  LISTENER:      http://${ip}:3000/listener
+═══════════════════════════════════════════════════`;
+            netInfo.classList.add("show");
+        }
     });
 
     socket.on('connect_error', (err) => {
